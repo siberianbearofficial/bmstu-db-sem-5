@@ -21,12 +21,19 @@ class Course:
         return self.__str__()
 
     def list(self):
-        return [self.id, self.title, self.description, self.teacher_id, self.created_at, self.deleted_at]
+        return [
+            self.id,
+            self.title,
+            self.description,
+            self.teacher_id,
+            self.created_at,
+            self.deleted_at,
+        ]
 
 
 class CourseFaker:
     def __init__(self, faker: Faker | None = None):
-        self.__faker = faker or Faker('ru')
+        self.__faker = faker or Faker("ru")
 
     def create_course(self, teacher_id: UUID) -> Course:
         title = self.__faker.word().capitalize()
