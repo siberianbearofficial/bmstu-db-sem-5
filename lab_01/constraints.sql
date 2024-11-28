@@ -27,3 +27,10 @@ ALTER TABLE enrollment
     ADD CONSTRAINT fk_course_id foreign key (course_id) references course (id),
     ALTER COLUMN created_at SET NOT NULL,
     ALTER COLUMN expires_at SET NOT NULL;
+
+ALTER TABLE course_prerequisite
+    ADD CONSTRAINT pk_course_prerequisite primary key (course_id, prerequisite_id),
+    ADD CONSTRAINT fk_course foreign key (course_id) references course (id),
+    ADD CONSTRAINT fk_prerequisite foreign key (prerequisite_id) references course (id),
+    ALTER COLUMN course_id SET NOT NULL,
+    ALTER COLUMN prerequisite_id SET NOT NULL;

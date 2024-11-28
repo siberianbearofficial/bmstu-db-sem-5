@@ -37,3 +37,10 @@ CREATE TABLE enrollment
     created_at timestamp,
     expires_at timestamp
 );
+
+CREATE TABLE course_prerequisite
+(
+    course_id uuid,
+    prerequisite_id uuid
+);
+
