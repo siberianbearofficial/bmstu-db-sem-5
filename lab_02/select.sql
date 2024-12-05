@@ -1,51 +1,51 @@
 -- 1. Инструкция SELECT, использующая предикат сравнения
 SELECT first_name, last_name
-FROM public.student
+FROM student
 WHERE created_at > '2024-01-01 00:00:00';
 
 -- 2. Инструкция SELECT, использующая предикат BETWEEN
 SELECT title, created_at
-FROM public.course
+FROM course
 WHERE created_at BETWEEN '2024-09-12 19:00:31.700000' AND '2024-09-12 19:00:31.800000';
 
 -- 3. Инструкция SELECT, использующая предикат LIKE
 SELECT first_name, email
-FROM public.teacher
+FROM teacher
 WHERE email LIKE 'a%';
 
 -- 4. Инструкция SELECT, использующая предикат IN с вложенным подзапросом
 SELECT title
-FROM public.course
+FROM course
 WHERE teacher_id IN (SELECT id
-                     FROM public.teacher
+                     FROM teacher
                      WHERE last_name = 'Самойлов');
 
 -- 5. Инструкция SELECT, использующая предикат EXISTS с вложенным подзапросом
 SELECT first_name, last_name
-FROM public.student s
+FROM student s
 WHERE EXISTS (SELECT 1
-              FROM public.enrollment e
+              FROM enrollment e
               WHERE e.student_id = s.id);
 
 -- 6. Инструкция SELECT, использующая предикат сравнения с квантором
 SELECT first_name, last_name
-FROM public.teacher t
+FROM teacher t
 WHERE created_at < ALL (SELECT created_at
-                        FROM public.course
+                        FROM course
                         WHERE teacher_id = t.id);
 
 -- 7. Инструкция SELECT, использующая агрегатные функции в выражениях столбцов
 SELECT course_id, COUNT(course_id) AS total_students, MAX(created_at) AS last_enrollment
-FROM public.enrollment
+FROM enrollment
 GROUP BY course_id;
 
 -- 8. Инструкция SELECT, использующая скалярные подзапросы в выражениях столбцов
 SELECT id,
        title,
        (SELECT COUNT(course_id)
-        FROM public.enrollment
+        FROM enrollment
         WHERE course_id = c.id) AS total_enrollments
-FROM public.course c;
+FROM course c;
 
 -- 9. Инструкция SELECT, использующая простое выражение CASE
 SELECT first_name,
@@ -54,7 +54,7 @@ SELECT first_name,
            WHEN deleted_at IS NULL THEN 'Active'
            ELSE 'Deleted'
            END AS status
-FROM public.student;
+FROM student;
 
 -- 10. Инструкция SELECT, использующая поисковое выражение CASE
 SELECT title,
@@ -63,29 +63,29 @@ SELECT title,
            WHEN '67194da4-f4f8-4e99-9e64-b4f2bbf599a6' THEN 'Помощник главного преподавателя'
            ELSE 'Обычный преподаватель'
            END AS teacher_name
-FROM public.course;
+FROM course;
 
 -- 11. Создание новой временной локальной таблицы из результирующего набора данных инструкции SELECT
 CREATE TEMP TABLE temp_course_students AS
 SELECT c.id        AS course_id,
        c.title,
        COUNT(e.id) AS total_students
-FROM public.course c
-         LEFT JOIN public.enrollment e ON c.id = e.course_id
+FROM course c
+         LEFT JOIN enrollment e ON c.id = e.course_id
 GROUP BY c.id;
 
 -- 12. Инструкция SELECT, использующая вложенные коррелированные подзапросы в качестве производных таблиц в предложении FROM
 SELECT t.first_name,
        t.last_name,
        avg_enrollments.total_enrollments
-FROM public.teacher t
+FROM teacher t
          JOIN (SELECT c.teacher_id,
                       AVG(enroll_count) AS total_enrollments
                FROM (SELECT course_id,
                             COUNT(course_id) AS enroll_count
-                     FROM public.enrollment
+                     FROM enrollment
                      GROUP BY course_id) e
-                        JOIN public.course c ON c.id = e.course_id
+                        JOIN course c ON c.id = e.course_id
                GROUP BY c.teacher_id) avg_enrollments ON avg_enrollments.teacher_id = t.id;
 
 -- 13. Инструкция SELECT, использующая вложенные подзапросы с уровнем вложенности 3
@@ -103,17 +103,17 @@ FROM student s;
 
 -- 14. Инструкция SELECT, консолидирующая данные с помощью предложения GROUP BY, но без предложения HAVING
 SELECT teacher_id, COUNT(teacher_id) AS total_courses
-FROM public.course
+FROM course
 GROUP BY teacher_id;
 
 -- 15. Инструкция SELECT, консолидирующая данные с помощью предложения GROUP BY и предложения HAVING
 SELECT teacher_id, COUNT(teacher_id) AS total_courses
-FROM public.course
+FROM course
 GROUP BY teacher_id
 HAVING COUNT(teacher_id) > 3;
 
 -- 16. Однострочная инструкция INSERT, выполняющая вставку в таблицу одной строки значений
-INSERT INTO public.student (id, first_name, last_name, created_at)
+INSERT INTO student (id, first_name, last_name, created_at)
 VALUES ('11111111-1111-1111-1111-111111111111', 'Иван', 'Иванов', CURRENT_TIMESTAMP);
 
 -- 17. Многострочная инструкция INSERT, выполняющая вставку в таблицу результирующего набора данных вложенного подзапроса
