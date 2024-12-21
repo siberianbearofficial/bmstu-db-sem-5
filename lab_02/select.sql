@@ -162,7 +162,7 @@ FROM student s
 WITH RECURSIVE prerequisite_hierarchy AS (SELECT prerequisite_id,
                                                  course_id
                                           FROM course_prerequisite
-                                          WHERE course_id = 'e188f115-a2bb-47c4-b7c4-6bdb6a9b7390'
+                                          WHERE course_id = '26264fe3-0b5a-4b26-96bc-9a4201d3a022'
 
                                           UNION ALL
 
