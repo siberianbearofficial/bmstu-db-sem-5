@@ -28,13 +28,20 @@ SELECT * FROM get_courses_by_teacher('1e6717dc-7935-4ea8-ab0e-8a7167f427e8');
 
 -- Многооператорная табличная функция
 CREATE OR REPLACE FUNCTION get_students_by_course(course UUID)
-RETURNS TABLE(student_id UUID, full_name TEXT, comment VARCHAR) AS $$
+RETURNS TABLE(student_id UUID, full_name TEXT, comment VARCHAR, total_students INTEGER) AS $$
+DECLARE
+    total_count INTEGER;
 BEGIN
+    SELECT COUNT(e.course_id) INTO total_count
+    FROM enrollment e
+    WHERE e.course_id = course;
+
     RETURN QUERY
     SELECT
         s.id,
         s.first_name || ' ' || s.last_name AS full_name,
-        e.comment
+        e.comment,
+        total_count AS total_students
     FROM student s
     JOIN enrollment e ON s.id = e.student_id
     WHERE e.course_id = course;
