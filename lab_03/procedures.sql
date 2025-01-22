@@ -15,7 +15,7 @@ $$;
 CALL print_all_students();
 
 
--- Рекурсивная хранимая процедура
+-- Хранимая процедура с рекурсивным ОТВ
 CREATE OR REPLACE PROCEDURE print_course_dependencies(course UUID)
 LANGUAGE plpgsql AS $$
 DECLARE

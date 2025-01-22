@@ -44,7 +44,7 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM get_students_by_course('b72c388e-7fae-4dd3-93e2-52ccd7779b79');
 
 
--- Рекурсивная функция (рекурсивный CTE)
+-- Функция с рекурсивным ОТВ
 CREATE OR REPLACE FUNCTION get_course_prerequisites(course UUID)
 RETURNS TABLE(course_id UUID, prerequisite_id UUID) AS $$
 BEGIN
