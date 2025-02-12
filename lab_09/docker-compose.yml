@@ -1,0 +1,21 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    environment:
+      - REDIS_PASSWORD=redis
+      - REDIS_USER=redis
+    ports:
+      - 6379:6379
+    expose:
+      - 6379
+    command: "--port 6379"
+    volumes:
+      - ./redisdata:/data
+    networks:
+      - dblabs
+
+
+networks:
+  dblabs:
+    external: true
