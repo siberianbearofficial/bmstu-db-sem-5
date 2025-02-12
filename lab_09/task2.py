@@ -84,13 +84,13 @@ def modification_loop(db_conn, mode, interval, inserted_ids):
             courses = cur.fetchall()
             if courses:
                 course = random.choice(courses)
-                new_title = course[1] + " (обновлено)"
+                new_title = course[1] + " (new)"
                 cur.execute(
                     "UPDATE course SET title = %s WHERE id = %s;",
                     (new_title, course[0]),
                 )
                 db_conn.commit()
-                print(f"Обновлен курс с id: {course[0]}, новый заголовок: {new_title}")
+                print(f"Обновлен курс с id: {course[0]}, новое название: {new_title}")
             else:
                 print("Нет курсов для обновления.")
             cur.close()
