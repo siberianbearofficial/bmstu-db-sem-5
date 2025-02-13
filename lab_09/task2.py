@@ -192,7 +192,7 @@ def plot(mode: str, timings: list[dict[str, float]]) -> None:
         marker="x",
         label="Redis Query Time",
     )
-    plt.xlabel("Время")
+    plt.xlabel("Количество попыток")
     plt.ylabel("Время выполнения (сек)")
     plt.title(f"Сравнение времени выполнения запросов ({mode} режим)")
     plt.legend()
