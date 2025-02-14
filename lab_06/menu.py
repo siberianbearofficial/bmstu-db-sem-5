@@ -17,7 +17,7 @@ def input_command(commands):
             print("Некорректная команда")
 
 
-def menu(*commands, command_exit_name="Завершить работу программы"):
+def menu(*commands, command_exit_name="Завершить работу программы", on_error=None):
     """Вызов меню с заданными командами. Команда 0 - выход"""
     commands = [(command_exit_name, exit)] + list(commands)
     while True:
@@ -29,5 +29,7 @@ def menu(*commands, command_exit_name="Завершить работу прог�
             commands[command][1]()  # Вызов команды
         except Exception as e:
             print(f"Ошибка при выполнении команды: {e.__class__.__name__}: {e}")
+            if on_error is not None:
+                on_error()
         if len(commands[command]) > 2 and commands[command][2] == exit:
             break
