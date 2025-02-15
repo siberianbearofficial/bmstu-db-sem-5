@@ -111,3 +111,7 @@ with Session() as session:
     # 4. Получение доступа к данным через вызов хранимой процедуры
     session.execute(text("CALL print_all_students()"))
     print("Хранимая процедура вызвана")
+
+    # 5*. Создать таблицу и проверить коммит
+    session.execute(text("CREATE TABLE test3 (id uuid, test varchar)"))
+    session.commit()
