@@ -57,51 +57,57 @@ class CoursePrerequisite(Base):
 
 engine = create_engine("postgresql://postgres:postgres@localhost:5432/postgres")
 Session = sessionmaker(bind=engine)
-session = Session()
 
-# 1. Однотабличный
-students = session.query(Student).order_by(Student.created_at).limit(10).all()
-print("Все студенты:", *map(lambda s: s.first_name, students), sep="\n")
+with Session() as session:
+    # 1. Однотабличный
+    students = session.query(Student).order_by(Student.created_at).limit(10).all()
+    print("Все студенты:", *map(lambda s: s.first_name, students), sep="\n")
 
-# 2. Многотабличный
-results = (
-    session.query(Student.first_name, Student.last_name, Enrollment.comment)
-    .join(Enrollment, Student.id == Enrollment.student_id)
-    .limit(10)
-    .all()
-)
-print(
-    "Имя студента и комментарий зачисления:",
-    *map(lambda r: f"{r.first_name} - {r.comment}", results),
-    sep="\n",
-)
-
-# 3. Добавление, изменение и удаление
-
-# Добавление
-new_student = Student(
-    first_name="New", last_name="Student", created_at=datetime.now(tz=None)
-)
-session.add(new_student)
-session.commit()
-print("Добавлен студент:", new_student.first_name, new_student.last_name)
-
-# Изменение
-student_to_update = session.query(Student).filter(Student.first_name == "New").first()
-if student_to_update:
-    student_to_update.last_name = "Updated"
-    session.commit()
-    print("Переименованный студент:", student_to_update.last_name)
-
-# Удаление
-enrollment_to_delete = session.query(Enrollment).order_by(Enrollment.created_at).first()
-if enrollment_to_delete:
-    session.delete(enrollment_to_delete)
-    session.commit()
+    # 2. Многотабличный
+    results = (
+        session.query(Student.first_name, Student.last_name, Enrollment.comment)
+        .join(Enrollment, Student.id == Enrollment.student_id)
+        .limit(10)
+        .all()
+    )
     print(
-        "Удаленное зачисление:", enrollment_to_delete.id, enrollment_to_delete.comment
+        "Имя студента и комментарий зачисления:",
+        *map(lambda r: f"{r.first_name} - {r.comment}", results),
+        sep="\n",
     )
 
-# 4. Получение доступа к данным через вызов хранимой процедуры
-session.execute(text("CALL print_all_students()"))
-print("Хранимая процедура вызвана")
+    # 3. Добавление, изменение и удаление
+
+    # Добавление
+    new_student = Student(
+        first_name="New", last_name="Student", created_at=datetime.now(tz=None)
+    )
+    session.add(new_student)
+    session.commit()
+    print("Добавлен студент:", new_student.first_name, new_student.last_name)
+
+    # Изменение
+    student_to_update = (
+        session.query(Student).filter(Student.first_name == "New").first()
+    )
+    if student_to_update:
+        student_to_update.last_name = "Updated"
+        session.commit()
+        print("Переименованный студент:", student_to_update.last_name)
+
+    # Удаление
+    enrollment_to_delete = (
+        session.query(Enrollment).order_by(Enrollment.created_at).first()
+    )
+    if enrollment_to_delete:
+        session.delete(enrollment_to_delete)
+        session.commit()
+        print(
+            "Удаленное зачисление:",
+            enrollment_to_delete.id,
+            enrollment_to_delete.comment,
+        )
+
+    # 4. Получение доступа к данным через вызов хранимой процедуры
+    session.execute(text("CALL print_all_students()"))
+    print("Хранимая процедура вызвана")
