@@ -13,8 +13,8 @@ from datetime import datetime
 
 COUNT = 20
 MEASURE_COUNT = 5
-QUERY_LOOP_DELAY = 0.5  # 5 sec
-MODIFICATION_LOOP_DELAY = 1  # 10 sec
+QUERY_LOOP_DELAY = 5  # 5 sec
+MODIFICATION_LOOP_DELAY = 10  # 10 sec
 REDIS_KEY = "stats"
 
 QUERY = """
