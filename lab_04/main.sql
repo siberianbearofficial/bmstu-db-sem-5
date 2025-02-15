@@ -3,13 +3,13 @@ CREATE OR REPLACE FUNCTION get_student_full_name(s_id uuid)
     RETURNS text
     LANGUAGE plpython3u AS
 $$
-    q = "SELECT first_name, last_name FROM student WHERE id = " + plpy.quote_literal(s_id)
-    result = plpy.execute(q, 1)
-    if result:
-        row = result[0]
-        return row["first_name"] + ' ' + row["last_name"]
-    else:
-        return None
+    q = "SELECT id, first_name, last_name FROM student"
+    results = plpy.execute(q)
+    if results:
+        for result in results:
+            if result["id"] == s_id:
+                return result["first_name"] + ' ' + result["last_name"]
+    return None
 $$;
 
 SELECT get_student_full_name('a5fd67a7-d0a5-424c-b67a-495d34e62075');
@@ -44,17 +44,25 @@ CREATE OR REPLACE FUNCTION get_courses_with_teacher()
     LANGUAGE plpython3u
 AS
 $$
-    sql = """
-        SELECT
-            c.id AS course_id,
-            c.title AS course_title,
-            t.first_name || ' ' || t.middle_name || ' ' || t.last_name AS teacher_full_name
-        FROM course c
-        JOIN teacher t ON c.teacher_id = t.id
-        WHERE c.deleted_at IS NULL AND t.deleted_at IS NULL
-    """
-    result = plpy.execute(sql)
-    return [(row["course_id"], row["course_title"], row["teacher_full_name"]) for row in result]
+    courses_sql = "SELECT id, title, teacher_id, deleted_at FROM course"
+    teachers_sql = "SELECT id, first_name, middle_name, last_name, deleted_at FROM teacher"
+
+    courses = plpy.execute(courses_sql)
+    teachers = plpy.execute(teachers_sql)
+
+    teacher_dict = dict()
+    for teacher in teachers:
+        if not teacher["deleted_at"]:
+            full_name = teacher["first_name"] + ' ' + teacher["middle_name"] + ' ' + teacher["last_name"]
+            teacher_dict[teacher["id"]] = full_name
+
+    result = []
+    for course in courses:
+        teacher_id = course["teacher_id"]
+        if not course["deleted_at"] and teacher_id in teacher_dict:
+            result.append((course["id"], course["title"], teacher_dict[teacher_id]))
+
+    return result
 $$;
 
 SELECT *
@@ -135,4 +143,22 @@ $$
     return high_enrollment_names
 $$;
 
-SELECT * FROM get_students_with_high_enrollment_python();
+SELECT *
+FROM get_students_with_high_enrollment_python();
+
+CREATE TABLE student_summary_table (
+    id uuid PRIMARY KEY,
+    student_info student_summary
+);
+
+INSERT INTO student_summary_table (id, student_info)
+SELECT
+    s.id,
+    (s.first_name || ' ' || s.last_name, COUNT(e.id))::student_summary
+FROM student s
+LEFT JOIN enrollment e ON s.id = e.student_id
+GROUP BY s.id, s.first_name, s.last_name;
+
+SELECT (s.student_info).full_name
+FROM student_summary_table s
+WHERE (s.student_info).enrollment_count > 30;
