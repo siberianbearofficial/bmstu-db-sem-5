@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 import redis.asyncio as redis
 import time
 import uuid
@@ -26,14 +28,28 @@ LIMIT 10;
 """
 
 
-async def create_db_conn() -> asyncpg.Connection:
-    return await asyncpg.connect(
+@asynccontextmanager
+async def create_db_conn():
+    conn = await asyncpg.connect(
         host="localhost",
         port=5432,
         database="postgres",
         user="postgres",
         password="postgres",
     )
+    try:
+        yield conn
+    finally:
+        await conn.close()
+
+
+@asynccontextmanager
+async def create_redis_client():
+    client = redis.Redis(host="localhost", port=6379)
+    try:
+        yield client
+    finally:
+        await client.close()
 
 
 async def measure_db(db_conn: asyncpg.Connection):
@@ -202,21 +218,15 @@ def plot(mode: str, timings: list[dict[str, float]]) -> None:
 
 
 async def main() -> None:
-    redis_client = redis.Redis(host="localhost", port=6379)
-
-    query_conn = await create_db_conn()
-    mod_conn = await create_db_conn()
-
-    inserted_ids = list()  # общий пул добавленных записей для delete
-    all_timings = dict()
-    for mode in ("none", "insert", "update", "delete"):
-        print(f"----- measuring timings for mode: {mode} -----")
-        all_timings[mode] = await measure_average(
-            query_conn, mod_conn, redis_client, mode, inserted_ids
-        )
-
-    await query_conn.close()
-    await mod_conn.close()
+    async with create_redis_client() as redis_client:
+        async with create_db_conn() as query_conn, create_db_conn() as mod_conn:
+            inserted_ids = list()  # общий пул добавленных записей для delete
+            all_timings = dict()
+            for mode in ("none", "insert", "update", "delete"):
+                print(f"----- measuring timings for mode: {mode} -----")
+                all_timings[mode] = await measure_average(
+                    query_conn, mod_conn, redis_client, mode, inserted_ids
+                )
 
     for mode, timings in all_timings.items():
         plot(mode, timings)
