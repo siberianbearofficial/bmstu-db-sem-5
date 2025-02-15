@@ -3,37 +3,27 @@ import json
 from datetime import datetime
 from py_linq import Enumerable
 
-json_document = """
-{
-    "students": [
-        {"id": "1", "first_name": "John", "last_name": "Doe", "created_at": "2021-01-01T00:00:00"},
-        {"id": "2", "first_name": "Alice", "last_name": "Smith", "created_at": "2021-02-15T00:00:00"},
-        {"id": "3", "first_name": "Bob", "last_name": "Brown", "created_at": "2021-03-20T00:00:00"},
-        {"id": "4", "first_name": "Alice", "last_name": "Jones", "created_at": "2021-04-01T00:00:00"}
-    ]
-}
-"""
+with open("../lab_01/data/student1.json") as f:
+    students = json.load(f)
 
-data = json.loads(json_document)
-students = data["students"]
 students_enum = Enumerable(students)
 
 
 def parse_date(date_str):
-    return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
+    return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f")
 
 
 query1 = (
     students_enum.where(
-        lambda s: s["first_name"] == "Alice"
-        and parse_date(s["created_at"]) > datetime(2021, 2, 1)
+        lambda s: s["first_name"] == "София"
+        and parse_date(s["created_at"]) > datetime(2023, 1, 1)
     )
     .order_by_descending(lambda s: parse_date(s["created_at"]))
     .to_list()
 )
 
 print(
-    f"Студенты Alice, созданные после 1 февраля 2021 в порядке убывания даты создания: {json.dumps(query1, indent=4)}"
+    f"Студенты с именем София, созданные после 1 января 2023 в порядке убывания даты создания: {json.dumps(query1, indent=4, ensure_ascii=False)}"
 )
 
 to_update = students_enum.where(
@@ -44,15 +34,17 @@ for student in to_update:
     student["last_name"] = f"{student['last_name']} (new)"
 
 print(
-    f"Обновляем фамилию студентов, созданных раньше 1 марта 2021: {json.dumps(data, indent=4)}"
+    f"Обновляем фамилию студентов, созданных раньше 1 марта 2021: {json.dumps(students, indent=4, ensure_ascii=False)}"
 )
 
 new_student = {
     "id": "5",
-    "first_name": "Eve",
-    "last_name": "Green",
-    "created_at": "2021-05-10T00:00:00",
+    "first_name": "Тестик",
+    "last_name": "Тестов",
+    "created_at": "2021-05-10T10:10:10.101010",
 }
-data["students"].append(new_student)
+students.append(new_student)
 
-print(f"Добавляем нового студента: {json.dumps(data, indent=4)}")
+print(
+    f"Добавляем нового студента: {json.dumps(students, indent=4, ensure_ascii=False)}"
+)
